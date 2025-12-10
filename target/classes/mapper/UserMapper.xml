@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.itheima.springboot_train.mapper.UserMapper">
+    <!-- 抽取 sql（移除了 role 列，因为数据库表中无该列） -->
+    <sql id="Base_Column_List">id, accountname, phone,  email, remark, role</sql>
+
+    <!-- 分页查询 -->
+    <select id="findUsers" resultType="com.itheima.springboot_train.entity.User">
+        SELECT <include refid="Base_Column_List"/> FROM user
+        <where>
+            <if test="accountname != null and accountname != ''">
+                AND accountname LIKE CONCAT('%', #{accountname}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                AND phone LIKE CONCAT('%', #{phone}, '%')
+            </if>
+            <if test="email != null and email != ''">
+                AND email LIKE CONCAT('%', #{email}, '%')
+            </if>
+        </where>
+        ORDER BY id ASC
+        LIMIT #{start}, #{limit}
+    </select>
+
+    <!-- 统计用户数量 -->
+    <select id="countUsers" resultType="java.lang.Integer">
+        SELECT COUNT(*) FROM user
+        <where>
+            <if test="accountname != null and accountname != ''">
+                AND accountname LIKE CONCAT('%', #{accountname}, '%')
+            </if>
+            <if test="phone != null and phone != ''">
+                AND phone LIKE CONCAT('%', #{phone}, '%')
+            </if>
+            <if test="email != null and email != ''">
+                AND email LIKE CONCAT('%', #{email}, '%')
+            </if>
+        </where>
+    </select>
+
+    <!-- 根据ID查询用户 -->
+    <select id="findById" resultType="com.itheima.springboot_train.entity.User">
+        SELECT <include refid="Base_Column_List"/> FROM user WHERE id = #{id, javaType=java.lang.Long, jdbcType=BIGINT}
+    </select>
+
+    <!-- 添加用户 -->
+    <!-- MyBatis 会把数据库生成的 id 值自动赋值给传入的 User 对象的 id 属性 -->
+    <insert id="addUser" parameterType="com.itheima.springboot_train.entity.User"
+            useGeneratedKeys="true" keyProperty="id" keyColumn="id">
+        INSERT INTO user (
+        accountname, phone, email, remark, password, role
+        ) VALUES (
+        #{accountname}, #{phone}, #{email}, #{remark}, #{password},#{role}
+        )
+    </insert>
+
+    <!-- 修改用户（只更新存在的列，移除 role） -->
+    <update id="updateUser" parameterType="com.itheima.springboot_train.entity.User">
+        UPDATE user
+        <set>
+            <if test="accountname != null">accountname = #{accountname},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="email != null">email = #{email},</if>
+            <if test="remark != null">remark = #{remark},</if>
+            <if test="password != null and password != ''">password = #{password},</if>
+        </set>
+        WHERE id = #{id, javaType=java.lang.Long, jdbcType=BIGINT}
+    </update>
+
+    <!-- 删除用户 -->
+    <delete id="deleteUser" parameterType="java.lang.Long">
+        DELETE FROM user WHERE id = #{id, javaType=java.lang.Long, jdbcType=BIGINT}
+    </delete>
+
+    <!-- 查询所有人员 -->
+    <select id="findAllUsers" resultType="com.itheima.springboot_train.entity.User">
+        SELECT <include refid="Base_Column_List"/> FROM user
+        ORDER BY id ASC
+    </select>
+
+</mapper>
